@@ -4,6 +4,7 @@ import ErrorPage from '../pages/ErrorPage'
 import Home from '../pages/Home'
 import PicturesAndComments from '../pages/PicturesAndComments'
 import Auth from '../pages/Auth'
+import ProtectedRoute from '../components/ProtectedRoute'
 
 export const router = createBrowserRouter([
 	{
@@ -17,7 +18,11 @@ export const router = createBrowserRouter([
 			},
 			{
 				path: 'pictures',
-				element: <PicturesAndComments />,
+				element: (
+					<ProtectedRoute>
+						<PicturesAndComments />
+					</ProtectedRoute>
+				),
 			},
 			{
 				path: 'auth',
