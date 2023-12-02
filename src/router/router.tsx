@@ -5,6 +5,7 @@ import Home from '../pages/Home'
 import PicturesAndComments from '../pages/PicturesAndComments'
 import Auth from '../pages/Auth'
 import ProtectedRoute from '../components/ProtectedRoute'
+import PictureComments from '../components/picture/PictureComments'
 
 export const router = createBrowserRouter([
 	{
@@ -21,6 +22,14 @@ export const router = createBrowserRouter([
 				element: (
 					<ProtectedRoute>
 						<PicturesAndComments />
+					</ProtectedRoute>
+				),
+			},
+			{
+				path: 'pictures/comments/:idPicture',
+				element: (
+					<ProtectedRoute>
+						<PictureComments />
 					</ProtectedRoute>
 				),
 			},

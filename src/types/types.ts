@@ -21,3 +21,11 @@ export interface IUser {
 	avatar: string
 	token: string
 }
+export interface IImage {
+	id: number
+	largeImageURL: string
+	webformatURL: string
+	tags: string
+	export interface IImages {
+	images:[]
+}
