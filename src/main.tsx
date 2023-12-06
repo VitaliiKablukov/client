@@ -9,7 +9,7 @@ import { BrowserRouter } from 'react-router-dom'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
 	<Provider store={store}>
-		<BrowserRouter basename="/client/">
+		<BrowserRouter basename="/client">
 			<App />
 			<ToastContainer position="bottom-left" autoClose={2000} />
 		</BrowserRouter>
