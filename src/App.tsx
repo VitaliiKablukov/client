@@ -5,8 +5,10 @@ import { getTokenFromLocalStorage } from './helpers/localstorage.helper'
 import { AuthService } from './services/auth.service'
 import { login, logout } from './store/user/userSlice'
 import { useEffect } from 'react'
+import useConnectSocket from './hooks/useConnectSocket'
 
 function App() {
+	useConnectSocket()
 	const dispatch = useAppDispatch()
 
 	const checkAuth = async () => {

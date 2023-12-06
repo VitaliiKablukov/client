@@ -2,8 +2,13 @@ import { configureStore } from '@reduxjs/toolkit'
 // ...
 import userReducer from './user/userSlice'
 import imagesReducer from './images/imageSlice'
+import commentsReducer from './comments/commentsSlice'
 export const store = configureStore({
-	reducer: { user: userReducer, images: imagesReducer },
+	reducer: {
+		user: userReducer,
+		images: imagesReducer,
+		comments: commentsReducer,
+	},
 })
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

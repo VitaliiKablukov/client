@@ -5,6 +5,7 @@ export interface IUserData {
 
 export interface IResponseUser {
 	email: string | undefined
+	userName: string | undefined
 	createdAt: string | undefined
 	updatedAt: string | undefined
 	avatar: string | undefined
@@ -19,6 +20,7 @@ export interface IUser {
 	id: number
 	email: string
 	avatar: string
+	userName: string
 	token: string
 }
 export interface IImage {
@@ -26,6 +28,19 @@ export interface IImage {
 	largeImageURL: string
 	webformatURL: string
 	tags: string
-	export interface IImages {
-	images:[]
+}
+export interface IImages {
+	images: []
+}
+
+export interface IComment {
+	id: number
+	text: string
+	createdAt: string | undefined
+	updatedAt: string | undefined
+	image: IImage
+	user: IResponseUser
+}
+export interface IComments {
+	comments: []
 }

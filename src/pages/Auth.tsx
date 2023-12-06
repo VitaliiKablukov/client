@@ -1,7 +1,10 @@
 import { FC, useState } from 'react'
 import { AuthService } from '../services/auth.service'
 import { toast } from 'react-toastify'
-import { setTokenToLocalStorage } from '../helpers/localstorage.helper'
+import {
+	setTokenToLocalStorage,
+	setUserIdToLocalStorage,
+} from '../helpers/localstorage.helper'
 import { useAppDispatch } from '../store/hooks'
 import { login } from '../store/user/userSlice'
 import { useNavigate } from 'react-router-dom'
@@ -9,17 +12,18 @@ import { useNavigate } from 'react-router-dom'
 const Auth: FC = () => {
 	const [email, setEmail] = useState<string>('')
 	const [password, setPassword] = useState<string>('')
+	const [userName, setUserName] = useState<string>('')
 	const [isLogin, setIsLogin] = useState<boolean>(false)
 	const dispatch = useAppDispatch()
 	const navigate = useNavigate()
 
 	const changeEmail = (e) => setEmail(e.target.value)
 	const changePassword = (e) => setPassword(e.target.value)
-
+	const changeUserName = (e) => setUserName(e.target.value)
 	const registrationHandler = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault()
 		try {
-			const data = await AuthService.registration({ email, password })
+			const data = await AuthService.registration({ email, password, userName })
 			if (data) {
 				toast.success('Account has been created')
 				setIsLogin(!isLogin)
@@ -35,6 +39,7 @@ const Auth: FC = () => {
 			const data = await AuthService.login({ email, password })
 			if (data) {
 				setTokenToLocalStorage('token', data.token)
+				setUserIdToLocalStorage('userId', data.id.toString())
 				dispatch(login(data))
 				toast.success('You logged success')
 				navigate('/')
@@ -55,6 +60,15 @@ const Auth: FC = () => {
 				className="flex w-1/3 flex-col mx-auto gap-5"
 				onSubmit={isLogin ? loginHandler : registrationHandler}
 			>
+				{!isLogin && (
+					<input
+						type="text"
+						className="input"
+						placeholder="User name"
+						onChange={changeUserName}
+					/>
+				)}
+
 				<input
 					type="text"
 					className="input"
