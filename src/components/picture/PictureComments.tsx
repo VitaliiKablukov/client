@@ -13,15 +13,84 @@ const PictureComments: FC = () => {
 	const [reCaptchaToken, setReCaptchaToken] = useState<string | null>('')
 	const [picture, setPicture] = useState({})
 	const [comments, setComments] = useState([])
+	const [file, setFile] = useState<File | null>(null)
+	const [fileType, setFileType] = useState<string>('')
 	const [page, setPage] = useState(1)
 	const [limit, setLimit] = useState(25)
 	const [text, setText] = useState('')
 	const { idPicture } = useParams()
 	const { id, largeImageURL, tags } = picture
 	useConnectSocket()
+	const MAX_IMAGE_WIDTH = 320
+	const MAX_IMAGE_HEIGHT = 240
 
-	const handleRecaptcha = (value: any) => {
+	const handleRecaptcha = (value: string | null) => {
 		setReCaptchaToken(value)
+	}
+	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const selectedFile = e.target.files && e.target.files[0]
+
+		if (selectedFile) {
+			if (selectedFile.size > 100 * 1024) {
+				toast.error('The file size should not exceed 100 KB.')
+				return
+			}
+
+			const allowedFormats = [
+				'image/jpeg',
+				'image/png',
+				'image/gif',
+				'text/plain',
+			]
+			if (!allowedFormats.includes(selectedFile.type)) {
+				toast.error('Invalid file format. Please use JPG, PNG, GIF or TXT.')
+				return
+			}
+			setFileType(selectedFile.type)
+
+			const reader = new FileReader()
+			reader.onload = (event) => {
+				const image = new Image()
+				image.src = event.target?.result as string
+
+				image.onload = () => {
+					const canvas = document.createElement('canvas')
+					let newWidth = image.width
+					let newHeight = image.height
+
+					if (image.width > MAX_IMAGE_WIDTH) {
+						newWidth = MAX_IMAGE_WIDTH
+						newHeight = (MAX_IMAGE_WIDTH / image.width) * image.height
+					}
+
+					if (image.height > MAX_IMAGE_HEIGHT) {
+						newHeight = MAX_IMAGE_HEIGHT
+						newWidth = (MAX_IMAGE_HEIGHT / image.height) * image.width
+					}
+
+					canvas.width = newWidth
+					canvas.height = newHeight
+
+					const context = canvas.getContext('2d')
+					context?.drawImage(image, 0, 0, newWidth, newHeight)
+
+					canvas.toBlob(
+						(blob) => {
+							const resizedFile = new File([blob as Blob], selectedFile.name, {
+								type: selectedFile.type,
+								lastModified: Date.now(),
+							})
+
+							setFile(resizedFile)
+						},
+						selectedFile.type,
+						0.9,
+					)
+				}
+			}
+
+			reader.readAsDataURL(selectedFile)
+		}
 	}
 	const getPictures = async () => {
 		try {
@@ -37,22 +106,45 @@ const PictureComments: FC = () => {
 			toast.error(error.toString())
 		}
 	}
-	const sendMessage = async (e) => {
+	const sendMessage = async (e: React.FormEvent) => {
 		e.preventDefault()
 
-		if (text === '') {
-			return
+		if (file) {
+			const reader = new FileReader()
+
+			reader.onloadend = () => {
+				let base64String = ''
+				console.log('reader')
+
+				if (fileType === 'text/plain') {
+					base64String = reader.result.split(',')[1]
+					console.log(base64String, 'is txt')
+				} else {
+					base64String = reader.result.split(',')[1]
+				}
+				SocketApi.socket?.emit('createComment', {
+					text,
+					userId: +getUserIdFromLocalStorage(),
+					imageId: id,
+					file: base64String,
+					type: fileType,
+				})
+
+				setText('')
+				setFile(null)
+			}
+
+			reader.readAsDataURL(file)
+		} else {
+			SocketApi.socket?.emit('createComment', {
+				text,
+				userId: +getUserIdFromLocalStorage(),
+				imageId: id,
+				file: '',
+				type: fileType,
+			})
+			setText('')
 		}
-		SocketApi.socket?.emit('createComment', {
-			text,
-			userId: +getUserIdFromLocalStorage(),
-			imageId: id,
-		})
-		SocketApi.socket?.on('clientComments', (data) => {
-			comments.unshift(data)
-			comments.pop()
-			console.log(comments)
-		})
 	}
 	const getComments = async () => {
 		try {
@@ -61,10 +153,9 @@ const PictureComments: FC = () => {
 				page,
 				limit,
 			)
-			console.log(data)
 
 			if (data) {
-				data.comments.map((dat) => comments.push(dat))
+				setComments(data.comments)
 			}
 		} catch (err: any) {
 			const error = err.response?.data.message
@@ -75,6 +166,13 @@ const PictureComments: FC = () => {
 	useEffect(() => {
 		getPictures()
 		getComments()
+		SocketApi.socket?.on('clientComments', (data) => {
+			setComments((prevComments) => {
+				const updatedComments = [data, ...prevComments.slice(0, 24)]
+				console.log(updatedComments)
+				return updatedComments
+			})
+		})
 	}, [])
 
 	return (
@@ -92,11 +190,15 @@ const PictureComments: FC = () => {
 					onChange={(e) => setText(e.target.value)}
 					value={text}
 				/>
-				<ReCAPTCHA
-					// use vite to import env variable
-					sitekey={'6LcKeigpAAAAABDBuvLLshY18zOf3iNTQcSZV8In'}
-					onChange={handleRecaptcha}
-				/>
+				<input type="file" onChange={handleFileChange} />
+				<div className="flex items-end justify-end mt-4">
+					{' '}
+					<ReCAPTCHA
+						// use vite to import env variable
+						sitekey={'6LcKeigpAAAAABDBuvLLshY18zOf3iNTQcSZV8In'}
+						onChange={handleRecaptcha}
+					/>
+				</div>
 				<button type="submit" className="btn btn-green ml-auto mt-2">
 					Send comment
 				</button>
@@ -113,6 +215,9 @@ const PictureComments: FC = () => {
 								</div>
 								<div className="bg-slate-700 p-4">
 									<p>{comment.text}</p>
+									{comment.file ? (
+										<img src={comment.file} alt="comment image" />
+									) : null}
 								</div>
 							</li>
 						)

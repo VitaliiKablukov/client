@@ -40,6 +40,7 @@ export interface IComment {
 	updatedAt: string | undefined
 	image: IImage
 	user: IResponseUser
+	file: string | undefined
 }
 export interface IComments {
 	comments: []
