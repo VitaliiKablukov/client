@@ -6,6 +6,7 @@ import PicturesAndComments from '../pages/PicturesAndComments'
 import Auth from '../pages/Auth'
 import ProtectedRoute from '../components/ProtectedRoute'
 import PictureComments from '../components/picture/PictureComments'
+import AnswersComment from '../components/picture/AnswersComment'
 
 export const router = createBrowserRouter([
 	{
@@ -33,6 +34,15 @@ export const router = createBrowserRouter([
 					</ProtectedRoute>
 				),
 			},
+			{
+				path: 'pictures/comments/:idPicture/:idComment',
+				element: (
+					<ProtectedRoute>
+						<AnswersComment />
+					</ProtectedRoute>
+				),
+			},
+
 			{
 				path: 'auth',
 				element: <Auth />,

@@ -45,3 +45,15 @@ export interface IComment {
 export interface IComments {
 	comments: []
 }
+export interface ICommentsAnswer {
+	id: number
+	text: string
+	createdAt: string | undefined
+	updatedAt: string | undefined
+	comment: IComment
+	user: IResponseUser
+	file: string | undefined
+}
+export interface ICommentsAnswers {
+	commentsAnswers: []
+}

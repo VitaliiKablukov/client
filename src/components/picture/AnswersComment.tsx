@@ -1,26 +1,23 @@
-import React, { FC, useEffect, useState } from 'react'
-import { ImagesService } from '../../services/image.service'
+import { FC, useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import useConnectSocket from '../../hooks/useConnectSocket'
 import { toast } from 'react-toastify'
-import { Link, useParams } from 'react-router-dom'
 import SocketApi from '../../api/socket.api'
 import { getUserIdFromLocalStorage } from '../../helpers/localstorage.helper'
-import useConnectSocket from '../../hooks/useConnectSocket'
+import { CommentsAnswerService } from '../../services/commentsAnswer'
 import { CommentsService } from '../../services/comments.service'
-import { IComment } from '../../types/types'
+import { ICommentsAnswer } from '../../types/types'
 import ReCAPTCHA from 'react-google-recaptcha'
-
-const PictureComments: FC = () => {
+const AnswersComment: FC = () => {
+	const { idComment } = useParams()
 	const [reCaptchaToken, setReCaptchaToken] = useState<string | null>('')
-	const [picture, setPicture] = useState({})
 	const [comments, setComments] = useState([])
+	const [comment, setComment] = useState<ICommentsAnswer | null>(null)
 	const [file, setFile] = useState<File | null>(null)
 	const [fileType, setFileType] = useState<string>('')
 	const [page, setPage] = useState(1)
 	const [limit, setLimit] = useState(25)
 	const [text, setText] = useState('')
-
-	const { idPicture } = useParams()
-	const { id, largeImageURL, tags } = picture
 	useConnectSocket()
 	const MAX_IMAGE_WIDTH = 320
 	const MAX_IMAGE_HEIGHT = 240
@@ -32,7 +29,7 @@ const PictureComments: FC = () => {
 		const selectedFile = e.target.files && e.target.files[0]
 
 		if (selectedFile) {
-			if (selectedFile.size > 100 * 1024) {
+			if (selectedFile.size > 1000 * 1024) {
 				toast.error('The file size should not exceed 100 KB.')
 				return
 			}
@@ -93,20 +90,7 @@ const PictureComments: FC = () => {
 			reader.readAsDataURL(selectedFile)
 		}
 	}
-	const getPictures = async () => {
-		try {
-			const data = await ImagesService.getOne(idPicture)
 
-			if (data) {
-				setPicture(data[0])
-			}
-
-			return data
-		} catch (err: any) {
-			const error = err.response?.data.message
-			toast.error(error.toString())
-		}
-	}
 	const sendMessage = async (e: React.FormEvent) => {
 		e.preventDefault()
 
@@ -115,7 +99,6 @@ const PictureComments: FC = () => {
 
 			reader.onloadend = () => {
 				let base64String = ''
-				console.log('reader')
 
 				if (fileType === 'text/plain') {
 					base64String = reader.result.split(',')[1]
@@ -123,10 +106,10 @@ const PictureComments: FC = () => {
 				} else {
 					base64String = reader.result.split(',')[1]
 				}
-				SocketApi.socket?.emit('createComment', {
+				SocketApi.socket?.emit('createAnswersComment', {
 					text,
 					userId: +getUserIdFromLocalStorage(),
-					imageId: id,
+					commentId: idComment,
 					file: base64String,
 					type: fileType,
 				})
@@ -137,10 +120,10 @@ const PictureComments: FC = () => {
 
 			reader.readAsDataURL(file)
 		} else {
-			SocketApi.socket?.emit('createComment', {
+			SocketApi.socket?.emit('createAnswersComment', {
 				text,
 				userId: +getUserIdFromLocalStorage(),
-				imageId: id,
+				commentId: idComment,
 				file: '',
 				type: fileType,
 			})
@@ -149,8 +132,8 @@ const PictureComments: FC = () => {
 	}
 	const getComments = async () => {
 		try {
-			const data = await CommentsService.getAllCommentsForPicture(
-				idPicture,
+			const data = await CommentsAnswerService.getAllCommentsAnswerForPicture(
+				+idComment,
 				page,
 				limit,
 			)
@@ -163,11 +146,24 @@ const PictureComments: FC = () => {
 			toast.error(error.toString())
 		}
 	}
+	const getComment = async () => {
+		try {
+			const data = await CommentsService.getOneCommentsForPicture(idComment)
 
+			if (data) {
+				setComment(data)
+			}
+
+			return data
+		} catch (err: any) {
+			const error = err.response?.data.message
+			toast.error(error.toString())
+		}
+	}
 	useEffect(() => {
-		getPictures()
+		getComment()
 		getComments()
-		SocketApi.socket?.on('clientComments', (data) => {
+		SocketApi.socket?.on('clientAnswerComments', (data) => {
 			setComments((prevComments) => {
 				const updatedComments = [data, ...prevComments.slice(0, 24)]
 
@@ -178,10 +174,13 @@ const PictureComments: FC = () => {
 
 	return (
 		<>
-			<div className="flex justify-between flex-col items-center mt-2">
-				<h2 className="text-4xl mb-4">{tags}</h2>
-
-				<img src={largeImageURL} alt={tags} />
+			<div className="bg-slate-500 p-2 flex justify-between">
+				<span className="mr-5">{comment?.user.userName}</span>
+				{comment?.user.email} <span className="ml-4">{comment?.createdAt}</span>
+			</div>
+			<div className="bg-slate-700 p-4">
+				<p>{comment?.text}</p>
+				{comment?.file ? <img src={comment.file} alt="comment image" /> : null}
 			</div>
 			<form className="p-10" onSubmit={sendMessage}>
 				<input
@@ -205,17 +204,14 @@ const PictureComments: FC = () => {
 				</button>
 			</form>
 			<ul>
-				{comments.length >= 1 ? (
-					comments.map((comment: IComment) => {
+				{comments ? (
+					comments.map((comment: ICommentsAnswer) => {
 						return (
 							<li key={comment.id} className="mb-5 p-4 border-4 rounded-3xl">
 								<div className="bg-slate-500 p-2 flex justify-between">
 									<span className="mr-5">{comment.user.userName}</span>
 									{comment.user.email}{' '}
 									<span className="ml-4">{comment.createdAt}</span>
-									<Link to={`${comment.id}`}>
-										<button className="btn btn-red">Comments</button>
-									</Link>
 								</div>
 								<div className="bg-slate-700 p-4">
 									<p>{comment.text}</p>
@@ -234,4 +230,4 @@ const PictureComments: FC = () => {
 	)
 }
 
-export default PictureComments
+export default AnswersComment
