@@ -2,9 +2,10 @@ import { FC, useEffect, useState } from 'react'
 import { ImagesService } from '../services/image.service.ts'
 import Image from '../components/picture/Picture'
 import { toast } from 'react-toastify'
+import { IImages } from '../types/types.ts'
 
 const PicturesAndComments: FC = () => {
-	const [pictures, setPictures] = useState([])
+	const [pictures, setPictures] = useState<IImages | []>([])
 
 	const getPictures = async () => {
 		try {

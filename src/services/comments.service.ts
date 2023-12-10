@@ -1,9 +1,9 @@
 import { instance } from '../api/axios.api'
-import { IComments, IComment } from '../types/types'
+import { IComments, ICommentsAnswer } from '../types/types'
 
 export const CommentsService = {
 	async getAllCommentsForPicture(
-		idPicture: number,
+		idPicture: string | undefined,
 		page: number,
 		limit: number,
 	): Promise<IComments | undefined> {
@@ -13,9 +13,11 @@ export const CommentsService = {
 		if (data) return data
 	},
 	async getOneCommentsForPicture(
-		idComment: number,
-	): Promise<IComment | undefined> {
-		const { data } = await instance.get<IComment>(`comments/${idComment}`)
+		idComment: string | undefined,
+	): Promise<ICommentsAnswer | undefined> {
+		const { data } = await instance.get<ICommentsAnswer>(
+			`comments/${idComment}`,
+		)
 		if (data) return data
 	},
 }

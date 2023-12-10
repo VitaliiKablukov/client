@@ -6,16 +6,20 @@ import SocketApi from '../../api/socket.api'
 import { getUserIdFromLocalStorage } from '../../helpers/localstorage.helper'
 import { CommentsAnswerService } from '../../services/commentsAnswer'
 import { CommentsService } from '../../services/comments.service'
-import { ICommentsAnswer } from '../../types/types'
+import { IComment, ICommentsAnswer } from '../../types/types'
 import ReCAPTCHA from 'react-google-recaptcha'
 const AnswersComment: FC = () => {
 	const { idComment } = useParams()
+	// @ts-ignore
 	const [reCaptchaToken, setReCaptchaToken] = useState<string | null>('')
-	const [comments, setComments] = useState([])
+	const [comments, setComments] = useState<IComment[]>([])
 	const [comment, setComment] = useState<ICommentsAnswer | null>(null)
 	const [file, setFile] = useState<File | null>(null)
 	const [fileType, setFileType] = useState<string>('')
+	// @ts-ignore
+
 	const [page, setPage] = useState(1)
+	// @ts-ignore
 	const [limit, setLimit] = useState(25)
 	const [text, setText] = useState('')
 	useConnectSocket()
@@ -101,10 +105,10 @@ const AnswersComment: FC = () => {
 				let base64String = ''
 
 				if (fileType === 'text/plain') {
-					base64String = reader.result.split(',')[1]
+					base64String = reader.result?.toString().split(',')[1] ?? ''
 					console.log(base64String, 'is txt')
 				} else {
-					base64String = reader.result.split(',')[1]
+					base64String = reader.result?.toString().split(',')[1] ?? ''
 				}
 				SocketApi.socket?.emit('createAnswersComment', {
 					text,
@@ -133,13 +137,13 @@ const AnswersComment: FC = () => {
 	const getComments = async () => {
 		try {
 			const data = await CommentsAnswerService.getAllCommentsAnswerForPicture(
-				+idComment,
+				idComment,
 				page,
 				limit,
 			)
 
 			if (data) {
-				setComments(data.comments)
+				setComments(data.commentsAnswers)
 			}
 		} catch (err: any) {
 			const error = err.response?.data.message
@@ -165,7 +169,7 @@ const AnswersComment: FC = () => {
 		getComments()
 		SocketApi.socket?.on('clientAnswerComments', (data) => {
 			setComments((prevComments) => {
-				const updatedComments = [data, ...prevComments.slice(0, 24)]
+				const updatedComments: IComment[] = [data, ...prevComments.slice(0, 24)]
 
 				return updatedComments
 			})
@@ -205,7 +209,7 @@ const AnswersComment: FC = () => {
 			</form>
 			<ul>
 				{comments ? (
-					comments.map((comment: ICommentsAnswer) => {
+					comments.map((comment: IComment) => {
 						return (
 							<li key={comment.id} className="mb-5 p-4 border-4 rounded-3xl">
 								<div className="bg-slate-500 p-2 flex justify-between">

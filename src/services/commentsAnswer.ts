@@ -1,9 +1,9 @@
 import { instance } from '../api/axios.api'
-import { ICommentsAnswer, ICommentsAnswers } from '../types/types'
+import { ICommentsAnswers } from '../types/types'
 
 export const CommentsAnswerService = {
 	async getAllCommentsAnswerForPicture(
-		idComment: number,
+		idComment: string | undefined,
 		page: number,
 		limit: number,
 	): Promise<ICommentsAnswers | undefined> {

@@ -1,5 +1,5 @@
 import { instance } from '../api/axios.api'
-import { IUserData, IResponseUserData, IUser } from '../types/types'
+import { IUserData, IResponseUserData, IUser, IUserLogin } from '../types/types'
 
 export const AuthService = {
 	async registration(
@@ -8,7 +8,7 @@ export const AuthService = {
 		const { data } = await instance.post<IResponseUserData>('user', userData)
 		return data
 	},
-	async login(userData: IUserData): Promise<IUser | undefined> {
+	async login(userData: IUserLogin): Promise<IUser | undefined> {
 		const { data } = await instance.post<IUser>('auth/login', userData)
 		return data
 	},

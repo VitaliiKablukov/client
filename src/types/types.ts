@@ -1,4 +1,9 @@
 export interface IUserData {
+	userName: string
+	email: string
+	password: string
+}
+export interface IUserLogin {
 	email: string
 	password: string
 }
@@ -50,10 +55,17 @@ export interface ICommentsAnswer {
 	text: string
 	createdAt: string | undefined
 	updatedAt: string | undefined
-	comment: IComment
+	comment: ICommentInICommentsAnswer
 	user: IResponseUser
 	file: string | undefined
 }
 export interface ICommentsAnswers {
 	commentsAnswers: []
+}
+export interface ICommentInICommentsAnswer {
+	id: number
+	text: string
+	createdAt: string | undefined
+	updatedAt: string | undefined
+	file: string | undefined
 }

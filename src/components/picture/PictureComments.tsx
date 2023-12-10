@@ -6,21 +6,27 @@ import SocketApi from '../../api/socket.api'
 import { getUserIdFromLocalStorage } from '../../helpers/localstorage.helper'
 import useConnectSocket from '../../hooks/useConnectSocket'
 import { CommentsService } from '../../services/comments.service'
-import { IComment } from '../../types/types'
+import { IComment, IImage } from '../../types/types'
 import ReCAPTCHA from 'react-google-recaptcha'
 
 const PictureComments: FC = () => {
+	// @ts-ignore
 	const [reCaptchaToken, setReCaptchaToken] = useState<string | null>('')
-	const [picture, setPicture] = useState({})
-	const [comments, setComments] = useState([])
+	const [picture, setPicture] = useState<IImage>()
+	const [comments, setComments] = useState<IComment[]>([])
 	const [file, setFile] = useState<File | null>(null)
+
 	const [fileType, setFileType] = useState<string>('')
+	// @ts-ignore
 	const [page, setPage] = useState(1)
+	// @ts-ignore
 	const [limit, setLimit] = useState(25)
 	const [text, setText] = useState('')
 
 	const { idPicture } = useParams()
+	// @ts-ignore
 	const { id, largeImageURL, tags } = picture
+
 	useConnectSocket()
 	const MAX_IMAGE_WIDTH = 320
 	const MAX_IMAGE_HEIGHT = 240
@@ -98,7 +104,7 @@ const PictureComments: FC = () => {
 			const data = await ImagesService.getOne(idPicture)
 
 			if (data) {
-				setPicture(data[0])
+				setPicture(data)
 			}
 
 			return data
@@ -118,10 +124,9 @@ const PictureComments: FC = () => {
 				console.log('reader')
 
 				if (fileType === 'text/plain') {
-					base64String = reader.result.split(',')[1]
-					console.log(base64String, 'is txt')
+					base64String = reader.result?.toString().split(',')[1] ?? ''
 				} else {
-					base64String = reader.result.split(',')[1]
+					base64String = reader.result?.toString().split(',')[1] ?? ''
 				}
 				SocketApi.socket?.emit('createComment', {
 					text,
@@ -169,7 +174,7 @@ const PictureComments: FC = () => {
 		getComments()
 		SocketApi.socket?.on('clientComments', (data) => {
 			setComments((prevComments) => {
-				const updatedComments = [data, ...prevComments.slice(0, 24)]
+				const updatedComments: IComment[] = [data, ...prevComments.slice(0, 24)]
 
 				return updatedComments
 			})

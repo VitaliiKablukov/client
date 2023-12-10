@@ -17,9 +17,12 @@ const Auth: FC = () => {
 	const dispatch = useAppDispatch()
 	const navigate = useNavigate()
 
-	const changeEmail = (e) => setEmail(e.target.value)
-	const changePassword = (e) => setPassword(e.target.value)
-	const changeUserName = (e) => setUserName(e.target.value)
+	const changeEmail = (e: React.ChangeEvent<HTMLInputElement>) =>
+		setEmail(e.target.value)
+	const changePassword = (e: React.ChangeEvent<HTMLInputElement>) =>
+		setPassword(e.target.value)
+	const changeUserName = (e: React.ChangeEvent<HTMLInputElement>) =>
+		setUserName(e.target.value)
 	const registrationHandler = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault()
 		try {
