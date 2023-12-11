@@ -25,8 +25,7 @@ const PictureComments: FC = () => {
 
 	const { idPicture } = useParams()
 	// @ts-ignore
-	const { id, largeImageURL, tags } = picture
-
+	const { id, largeImageURL, tags } = picture || {}
 	useConnectSocket()
 	const MAX_IMAGE_WIDTH = 320
 	const MAX_IMAGE_HEIGHT = 240
@@ -104,7 +103,8 @@ const PictureComments: FC = () => {
 			const data = await ImagesService.getOne(idPicture)
 
 			if (data) {
-				setPicture(data)
+				// @ts-ignore
+				setPicture(data[0])
 			}
 
 			return data
