@@ -6,13 +6,13 @@ import SocketApi from '../../api/socket.api'
 import { getUserIdFromLocalStorage } from '../../helpers/localstorage.helper'
 import { CommentsAnswerService } from '../../services/commentsAnswer'
 import { CommentsService } from '../../services/comments.service'
-import { IComment, ICommentsAnswer } from '../../types/types'
+import { ICommentsAnswer, ICommentsAnswers } from '../../types/types'
 import ReCAPTCHA from 'react-google-recaptcha'
 const AnswersComment: FC = () => {
 	const { idComment } = useParams()
 	// @ts-ignore
 	const [reCaptchaToken, setReCaptchaToken] = useState<string | null>('')
-	const [comments, setComments] = useState<IComment[]>([])
+	const [comments, setComments] = useState<ICommentsAnswers[]>([])
 	const [comment, setComment] = useState<ICommentsAnswer | null>(null)
 	const [file, setFile] = useState<File | null>(null)
 	const [fileType, setFileType] = useState<string>('')
@@ -169,7 +169,12 @@ const AnswersComment: FC = () => {
 		getComments()
 		SocketApi.socket?.on('clientAnswerComments', (data) => {
 			setComments((prevComments) => {
-				const updatedComments: IComment[] = [data, ...prevComments.slice(0, 24)]
+				console.log(data)
+
+				const updatedComments: ICommentsAnswers[] = [
+					data,
+					...prevComments.slice(0, 24),
+				]
 
 				return updatedComments
 			})
@@ -209,7 +214,8 @@ const AnswersComment: FC = () => {
 			</form>
 			<ul>
 				{comments ? (
-					comments.map((comment: IComment) => {
+					// @ts-ignore
+					comments.map((comment: ICommentsAnswer) => {
 						return (
 							<li key={comment.id} className="mb-5 p-4 border-4 rounded-3xl">
 								<div className="bg-slate-500 p-2 flex justify-between">

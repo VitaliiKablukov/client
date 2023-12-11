@@ -6,10 +6,13 @@ import { IImages } from '../types/types.ts'
 
 const PicturesAndComments: FC = () => {
 	const [pictures, setPictures] = useState<IImages | []>([])
+	console.log(pictures)
 
 	const getPictures = async () => {
 		try {
 			const data = await ImagesService.getAllPictures()
+			console.log(data)
+
 			if (data) {
 				setPictures(data)
 			}
