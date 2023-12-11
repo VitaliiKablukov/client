@@ -6,7 +6,7 @@ class SocketApi {
 	static socket: null | Socket = null
 
 	static createConnection(): void {
-		this.socket = io('http://localhost:3000/', {
+		this.socket = io('https://spa-jn0u.onrender.com/', {
 			extraHeaders: {
 				Authorization: `Bearer ` + getTokenFromLocalStorage() || '',
 			},
