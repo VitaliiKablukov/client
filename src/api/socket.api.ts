@@ -20,3 +20,5 @@ class SocketApi {
 	}
 }
 export default SocketApi
+// http://localhost:3000
+// https://spa-jn0u.onrender.com/

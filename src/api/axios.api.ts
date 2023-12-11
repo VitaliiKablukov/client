@@ -6,3 +6,5 @@ export const instance = axios.create({
 		Authorization: 'Bearer ' + getTokenFromLocalStorage() || '',
 	},
 })
+// https://spa-jn0u.onrender.com
+// http://localhost:3000

@@ -143,7 +143,8 @@ const AnswersComment: FC = () => {
 			)
 
 			if (data) {
-				setComments(data.commentsAnswers)
+				// @ts-ignore
+				setComments(data.comments)
 			}
 		} catch (err: any) {
 			const error = err.response?.data.message
@@ -169,11 +170,9 @@ const AnswersComment: FC = () => {
 		getComments()
 		SocketApi.socket?.on('clientAnswerComments', (data) => {
 			setComments((prevComments) => {
-				console.log(data)
-
 				const updatedComments: ICommentsAnswers[] = [
 					data,
-					...prevComments.slice(0, 24),
+					...(prevComments ? prevComments.slice(0, 24) : []),
 				]
 
 				return updatedComments
